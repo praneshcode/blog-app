@@ -5,8 +5,6 @@ A RESTful API for creating, reading, and managing posts/blogs. Developed using S
 ## Built With
 - [Spring Boot](https://spring.io/)
 - [Maven](https://maven.apache.org/)
-- [JPA](https://spring.io/projects/spring-data-jpa)
-- [Hibernate](https://hibernate.org/)
 - [MySQL](https://www.mysql.com/)
 
 ## Overview
@@ -23,5 +21,5 @@ Users can create posts, each associated with a category or topic. The API provid
 - JWT authentication
 - DTO pattern
 - Post searching by keyword
-- Data validation using Hibernate Validator
+- Data validation
 - Documentation using Swagger
