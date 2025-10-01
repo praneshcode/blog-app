@@ -5,6 +5,7 @@ A RESTful API for creating, reading, and managing posts/blogs. Developed using S
 ## Built With
 - [Spring Boot](https://spring.io/)
 - [Maven](https://maven.apache.org/)
+- [JPA](https://spring.io/projects/spring-data-jpa)
 - [MySQL](https://www.mysql.com/)
 
 ## Overview
