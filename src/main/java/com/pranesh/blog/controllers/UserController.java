@@ -2,7 +2,7 @@ package com.pranesh.blog.controllers;
 
 import java.util.List;
 
-import javax.validation.Valid;
+import jakarta.validation.Valid;
 
 import com.pranesh.blog.entities.User;
 import com.pranesh.blog.payloads.RoleDto;

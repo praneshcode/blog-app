@@ -1,6 +1,7 @@
 package com.pranesh.blog.security;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -10,19 +11,25 @@ import com.pranesh.blog.entities.User;
 import com.pranesh.blog.exceptions.ResourceNotFoundException;
 import com.pranesh.blog.repositories.UserRepo;
 
-@Service
-public class CustomUserDetailService implements UserDetailsService {
-// whenever spring security needs to know the user details,It will call this method
+import java.util.stream.Collectors;
 
-    @Autowired
+@Service
+@AllArgsConstructor
+public class CustomUserDetailService implements UserDetailsService {
     private UserRepo userRepo;
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        // loading user from database by username
-        User user = this.userRepo.findByEmail(username).orElseThrow(() -> new ResourceNotFoundException("User", "Email", username));
-        return user;
-        // since user has implemented UserDetails so returning User only
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "Email", email));
+
+        return new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                user.getRoles().stream()
+                        .map(role -> new SimpleGrantedAuthority(role.getName()))
+                        .collect(Collectors.toList())
+        );
     }
 
 }

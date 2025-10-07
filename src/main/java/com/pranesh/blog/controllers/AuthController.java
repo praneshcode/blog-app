@@ -1,73 +1,80 @@
 package com.pranesh.blog.controllers;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import com.pranesh.blog.entities.User;
+import com.pranesh.blog.exceptions.ResourceNotFoundException;
+import com.pranesh.blog.repositories.UserRepo;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
 
 import com.pranesh.blog.exceptions.ApiException;
 import com.pranesh.blog.payloads.JwtAuthRequest;
 import com.pranesh.blog.payloads.JwtAuthResponse;
 import com.pranesh.blog.payloads.UserDto;
-import com.pranesh.blog.security.JwtTokenHelper;
+import com.pranesh.blog.security.JwtService;
 import com.pranesh.blog.services.UserService;
 
+@AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
-    @Autowired
-    private JwtTokenHelper jwtTokenHelper;
-
-    @Autowired
-    private UserDetailsService userDetailService;
-
-    @Autowired
+    private JwtService jwtService;
     private AuthenticationManager authenticationManager;
-
-    @Autowired
     private UserService userService;
 
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> createToken(
             @RequestBody JwtAuthRequest request
-    ) throws Exception {
+    ) {
+        authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getUsername(),
+                        request.getPassword()
+                )
+        );
 
-        this.authenticate(request.getUsername(), request.getPassword());
-        UserDetails userDetails = this.userDetailService.loadUserByUsername(request.getUsername());
-
-        String token = this.jwtTokenHelper.generateToken(userDetails);
-
-        JwtAuthResponse response = new JwtAuthResponse();
-        response.setToken(token);
-
-        return new ResponseEntity<JwtAuthResponse>(response, HttpStatus.OK);
+        String token = jwtService.generateToken(request.getUsername());
+        return new ResponseEntity<>(new JwtAuthResponse(token), HttpStatus.OK);
     }
 
-    private void authenticate(String username, String password) throws Exception {
-        UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(username, password);
-        // we might get exceptions here i.e. user disabled handling it in global exception
-        try {
-            this.authenticationManager.authenticate(usernamePasswordAuthenticationToken);
-        } catch (BadCredentialsException ex) {
-            System.out.println("invalid details of user in request");
-            throw new ApiException("Invalid Username or password");
-        }
-    }
-
-    // register new user
     @PostMapping("/register")
     public ResponseEntity<UserDto> registerNewUser(@RequestBody UserDto userDto) {
-        UserDto newUser = this.userService.registerNewUser(userDto);
+        UserDto newUser = userService.registerNewUser(userDto);
 
-        return new ResponseEntity<UserDto>(newUser, HttpStatus.OK);
+        return new ResponseEntity<>(newUser, HttpStatus.OK);
+    }
+
+    @GetMapping("/validate")
+    public Boolean validateToken(@RequestHeader(value = "Authorization", required = false) String authHeader) {
+        String token = authHeader.replace("Bearer ", "");
+
+        return jwtService.validateToken(token);
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<UserDto> getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getPrincipal().toString();
+
+        UserDto userDto = userService.getUserByEmail(email);
+
+        return new ResponseEntity<>(userDto, HttpStatus.OK);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public void handleBadCredentialsException() {
+        throw new ApiException("Invalid Username or password");
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public void handleResourceNotFoundException() {
     }
 }

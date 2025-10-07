@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletResponse;
 
-import org.hibernate.engine.jdbc.StreamUtils;
+import org.springframework.util.StreamUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -41,7 +41,7 @@ public class PostController {
     @Autowired
     private FileService fileService;
 
-    //path from application.properties to  upload images
+    //path from application.yaml to  upload images
     @Value("${project.image}")
     private String PATH;
 

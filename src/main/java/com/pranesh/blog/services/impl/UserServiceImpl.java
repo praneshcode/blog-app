@@ -144,4 +144,11 @@ public class UserServiceImpl implements UserService {
         return this.modelMapper.map(savedUser, UserDto.class);
     }
 
+    @Override
+    public UserDto getUserByEmail(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User", "Email", email));
+        return UserToDto(user);
+    }
+
 }
