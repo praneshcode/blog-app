@@ -16,51 +16,33 @@ import com.pranesh.blog.repositories.RoleRepo;
 
 @SpringBootApplication
 public class BlogAppApplication implements CommandLineRunner {
-	
-	@Autowired
-	private PasswordEncoder passwordEncoder;
 
-	@Autowired
-	private RoleRepo roleRepo;
-	
-	public static void main(String[] args) {
-		SpringApplication.run(BlogAppApplication.class, args);
-	}
-	
-	@Bean
-	public ModelMapper modelMapper() 
-	{
-		return new ModelMapper();
-	}
+    @Autowired
+    private RoleRepo roleRepo;
 
-	// will run automatically when main runs and passing arguments via terminal
-	@Override
-	public void run(String... args) throws Exception {
-		
-//		System.out.println(this.passwordEncoder.encode("12345"));
-		
-		// Creating 2 roles at the start of application
-		try {
-			
-			Role role = new Role();
-			role.setId(AppConstants.ADMIN_USER);
-			role.setName("ROLE_ADMIN");
-			
-			Role role1 = new Role();
-			role1.setId(AppConstants.NORMAL_USER);
-			role1.setName("ROLE_NORMAL");
-			
-			List<Role> roles = List.of(role,role1);
-			
-			List<Role> result = this.roleRepo.saveAll(roles);
-			
-			result.forEach(r -> {
-				System.out.println(r.getName());
-			});
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(BlogAppApplication.class, args);
+    }
+
+    @Bean
+    public ModelMapper modelMapper() {
+        return new ModelMapper();
+    }
+
+    @Override
+    public void run(String... args) {
+        Role roleUser = new Role(1, "ROLE_USER");
+        Role roleAdmin = new Role(2, "ROLE_ADMIN");
+
+        // check if roles already exist in DB
+        List<Role> existingRoles = roleRepo.findAll();
+
+        if (existingRoles.isEmpty()) {
+            roleRepo.saveAll(List.of(roleUser, roleAdmin));
+            System.out.println("✅ Default roles created");
+        } else {
+            System.out.println("⚠️ Roles already exist");
+        }
+    }
 
 }

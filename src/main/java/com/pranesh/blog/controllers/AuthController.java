@@ -28,6 +28,7 @@ public class AuthController {
     private JwtService jwtService;
     private AuthenticationManager authenticationManager;
     private UserService userService;
+    private UserRepo userRepo;
 
     @PostMapping("/login")
     public ResponseEntity<JwtAuthResponse> createToken(
@@ -40,7 +41,9 @@ public class AuthController {
                 )
         );
 
-        String token = jwtService.generateToken(request.getUsername());
+        User user = userRepo.findByEmail(request.getUsername()).orElseThrow();
+        String token = jwtService.generateToken(user);
+
         return new ResponseEntity<>(new JwtAuthResponse(token), HttpStatus.OK);
     }
 
@@ -61,9 +64,9 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<UserDto> getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String email = auth.getPrincipal().toString();
+        Integer userId = (Integer) auth.getPrincipal();
 
-        UserDto userDto = userService.getUserByEmail(email);
+        UserDto userDto = userService.getUserById(userId);
 
         return new ResponseEntity<>(userDto, HttpStatus.OK);
     }
@@ -73,8 +76,8 @@ public class AuthController {
         throw new ApiException("Invalid Username or password");
     }
 
-    @ExceptionHandler(ResourceNotFoundException.class)
-    @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public void handleResourceNotFoundException() {
-    }
+//    @ExceptionHandler(ResourceNotFoundException.class)
+//    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+//    public void handleResourceNotFoundException() {
+//    }
 }

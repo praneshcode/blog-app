@@ -82,7 +82,6 @@ public class PostController {
     }
 
     // Admin only
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/posts/{postId}")
     public ResponseEntity<ApiResponse> deletePost(@PathVariable Integer postId) {
         postService.deletePost(postId);

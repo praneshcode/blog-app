@@ -93,7 +93,6 @@ public class UserServiceImpl implements UserService {
             throw new ResourceNotFoundException("Role", "Name", roleDto.getName());
         }
 
-        user.getRoles().clear();
         user.getRoles().add(role);
         User updatedUser = userRepo.save(user);
 
@@ -135,7 +134,7 @@ public class UserServiceImpl implements UserService {
         user.setPassword(this.passwordEncoder.encode(user.getPassword()));
 
         // getting role
-        Role role = this.roleRepo.findById(AppConstants.NORMAL_USER).get();
+        Role role = this.roleRepo.findById(1).orElseThrow();
 
         user.getRoles().add(role);
 

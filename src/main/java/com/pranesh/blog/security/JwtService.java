@@ -2,8 +2,12 @@ package com.pranesh.blog.security;
 
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
+import com.pranesh.blog.entities.Role;
+import com.pranesh.blog.entities.User;
 import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -19,12 +23,14 @@ public class JwtService {
 
     public static final long JWT_TOKEN_VALIDITY = 30 * 24 * 60 * 60; //30 days
 
-    public String generateToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
-
+    public String generateToken(User user) {
         return Jwts.builder()
-                .subject(email)
-                .claims(claims)
+                .subject(user.getId().toString())
+                .claim("name", user.getName())
+                .claim("email", user.getEmail())
+                .claim("roles", user.getRoles().stream()
+                        .map(Role::getName)
+                        .collect(Collectors.toList()))
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + JWT_TOKEN_VALIDITY * 1000))
                 .signWith(Keys.hmacShaKeyFor(secret.getBytes()))
@@ -39,8 +45,12 @@ public class JwtService {
                 .getPayload();
     }
 
-    public String getEmailFromToken(String token) {
-        return getClaims(token).getSubject();
+    public Integer getUserIdFromToken(String token) {
+        return Integer.valueOf(getClaims(token).getSubject());
+    }
+
+    public List<String> getRolesFromToken(String token) {
+        return (List<String>) getClaims(token).get("roles");
     }
 
     private Boolean isTokenExpired(String token) {

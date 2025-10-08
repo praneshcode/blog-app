@@ -29,7 +29,6 @@ public class CommentController {
     }
 
     // Admin only
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/comments/{commentId}")
     public ResponseEntity<ApiResponse> deleteComment(@PathVariable Integer commentId) {
         this.commentService.deleteComment(commentId);

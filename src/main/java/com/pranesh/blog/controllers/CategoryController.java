@@ -41,7 +41,6 @@ public class CategoryController {
     }
 
     // Admin only
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{categoryId}")
     public ResponseEntity<ApiResponse> deleteCategory(@PathVariable Integer categoryId) {
         categoryService.deleteCategory(categoryId);

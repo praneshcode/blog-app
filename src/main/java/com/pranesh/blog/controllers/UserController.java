@@ -48,7 +48,6 @@ public class UserController {
     }
 
     // Admin only
-    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{userId}")
     public ResponseEntity<ApiResponse> deleteUser(@PathVariable Integer userId) // instead of ApiResponse we can also use ? as sometime we do not know the type
     {
